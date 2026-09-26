@@ -1,0 +1,133 @@
+Enter an arXiv ID, URL, or Research Topic: 1706.03762
+
+⏳ Processing state graph pipeline...
+
+================================================================================
+📑 EXECUTIVE BRIEFING: Attention Is All You Need
+================================================================================
+• Authors:     Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, Illia Polosukhin
+• arXiv ID:    1706.03762v7 | Date: 2017-06-12
+• Link:        https://arxiv.org/pdf/1706.03762v7
+
+💡 WHY THIS MATTERS (Summary):
+The Transformer paper introduces a novel sequence‑to‑sequence architecture that replaces recurrence and convolution with pure attention mechanisms, enabling full parallel computation over all positions. By leveraging scaled dot‑product and multi‑head self‑attention, together with simple feed‑forward layers and sinusoidal positional encodings, the model achieves state‑of‑the‑art translation quality on benchmark datasets while reducing training time dramatically. This work fundamentally reshaped natural language processing, spawning a generation of large‑scale pre‑trained models and establishing attention as the central building block for sequence modeling.
+
+🎯 PROBLEM STATEMENT:
+Recurrent and convolutional sequence models require sequential computation, limiting parallelism and making training on long sequences inefficient; the authors aim to devise an architecture that captures global dependencies without recurrence, improving speed and scalability while maintaining or improving performance.
+
+🛠️ METHOD / APPROACH:
+  - Scaled dot‑product attention: computes attention weights as softmax(QKᵀ / √d_k) V.
+  - Multi‑head attention: projects queries, keys, values into h parallel subspaces, applies attention, concatenates results, and projects back.
+  - Positional encoding: adds deterministic sinusoidal vectors to token embeddings to inject order information.
+  - Encoder‑decoder stacks: six identical layers each, with residual connections and layer normalization around sub‑layers.
+  - Position‑wise feed‑forward networks: two linear transformations with ReLU activation applied to each position independently.
+
+📊 KEY RESULTS / CLAIMS:
+  - Achieved 28.4 BLEU on WMT 2014 English‑German translation, surpassing previous best by >2 BLEU.
+  - Achieved 41.8 BLEU on WMT 2014 English‑French translation, setting a new single‑model state‑of‑the‑art.
+  - Trained the model for 3.5 days on eight P100 GPUs, a fraction of the training cost of prior SOTA models.
+  - Demonstrated strong generalization to English constituency parsing, both with large and limited data.
+
+⚠️ EXPLICIT LIMITATIONS:
+  - Self‑attention has O(n²) memory and compute complexity with sequence length, limiting scalability to very long inputs.
+  - Fixed sinusoidal positional encodings may be suboptimal for tasks requiring learned or relative position representations.
+  - The architecture processes the entire input before producing any output, making it unsuitable for low‑latency streaming or online inference without modifications.
+  - Training large Transformers still requires substantial GPU memory and compute; efficiency gains come from parallelism, not reduced overall FLOPs.
+  - Interpretability of multi‑head attention patterns can be ambiguous, and the model may still struggle with rare or out‑of‑vocabulary tokens.
+
+❓ SUGGESTED FOLLOW-UP QUESTIONS:
+  ? Develop efficient attention variants (e.g., sparse, linear‑complexity) to handle longer sequences with reduced memory footprint.
+  ? Explore learned or relative positional encodings to improve adaptability across diverse tasks and languages.
+  ? Integrate recurrence or convolutional inductive biases with attention to better capture local structure and enable streaming inference.
+  ? Investigate robustness and fairness of Transformer models, particularly on low‑resource languages and out‑of‑distribution inputs.
+================================================================================
+
+
+💬 Entering QA Mode for 'Attention Is All You Need'.
+Ask any follow-up question (type 'exit' or 'q' to return):
+
+User >> What warm-up steps parameter was used in the Adam optimizer formula?
+
+Agent >> The warm‑up steps parameter was set to **4000**.
+
+User >> How many heads were used in the multi-head attention mechanism for the base model?
+
+Agent >> The paper states that the model uses **8 parallel attention layers (heads)** in its multi‑head attention mechanism.
+
+User >> does the paper mention using FlashAttention or KV-cache optimization?exit
+
+Agent >> The paper does not provide enough evidence or mention this detail.
+
+User >> exit
+Exiting QA session. Goodbye!
+(venv) PS C:\Projects\arxiv-digest-agent> python main.py
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 103/103 [00:00<00:00, 2812.50it/s]
+============================================================
+ Autonomous arXiv Paper Digest & QA Agent
+============================================================
+Enter an arXiv ID, URL, or Research Topic: recent work on KV-cache compression for LLMs
+
+⏳ Processing state graph pipeline...
+
+================================================================================
+📑 EXECUTIVE BRIEFING: PolyKV: A Shared Asymmetrically-Compressed KV Cache Pool for Multi-Agent LLM Inference
+================================================================================
+• Authors:     Ishan Patel, Ishan Joshi
+• arXiv ID:    2604.24971v1 | Date: 2026-04-27
+• Link:        https://arxiv.org/pdf/2604.24971v1
+
+💡 WHY THIS MATTERS (Summary):
+PolyKV tackles the dominant memory bottleneck of transformer‑based LLM inference in multi‑agent settings by replacing per‑agent KV caches with a single, asymmetrically compressed cache pool. By quantizing keys to int8 and compressing values with TurboQuant's fast Walsh‑Hadamard rotation followed by 3‑bit Lloyd‑Max quantization, the system achieves a consistent 2.91× reduction in KV memory while preserving generation quality—perplexity deviates by less than 0.6% and semantic similarity stays above 0.92 BERTScore. The shared‑pool design scales to at least 15 concurrent readers, delivering up to 97.7% memory savings without additional quality loss, and even yields perplexity improvements on coherent long contexts, suggesting an implicit regularization effect from the compression noise.
+
+🎯 PROBLEM STATEMENT:
+Transformer inference memory is dominated by per‑layer key/value caches, which scale linearly with context length, model size, and the number of concurrent inference agents; existing solutions either compress individual caches or share uncompressed prefixes, but no approach combines shared access with lossy compression to dramatically cut memory usage.
+
+🛠️ METHOD / APPROACH:
+  - Introduce SharedKVPool abstraction that computes a single KV cache for a shared document context and stores it in compressed form.
+  - Apply asymmetric quantization: keys quantized to int8 (q8_0) to preserve softmax stability; values compressed via TurboQuant MSE (FWHT rotation + 3‑bit Lloyd‑Max quantization).
+  - Store the compressed pool as a single memory object (O(1) w.r.t. number of agents).
+  - Each PooledAgent injects decompressed KV tensors layer‑by‑layer into its own HuggingFace DynamicCache, avoiding per‑agent cache duplication.
+  - Empirically evaluate across two models, four context lengths (600–7,194 tokens), and up to 15 agents, measuring memory, perplexity, and BERTScore.
+
+📊 KEY RESULTS / CLAIMS:
+  - Achieves a stable 2.91× compression ratio (8‑bit keys, 3‑bit values) across all model, context, and agent configurations.
+  - Reduces KV cache memory for Llama‑3‑8B with 15 concurrent agents and a 4K‑token context from 19.8 GB to 0.45 GB (97.7% reduction).
+  - Perplexity degradation is minimal: +0.57% worst‑case on 7,194‑token context; in fact, a −0.26% PPL improvement is observed on 1,851‑token coherent contexts.
+  - Semantic quality measured by BERTScore F1 remains high (0.928–0.970) across all agent counts, exceeding the 0.92 threshold.
+  - PPL delta and compression ratio remain invariant when scaling agents from 3 to 15, confirming that shared‑pool access introduces no additional quality loss.
+
+⚠️ EXPLICIT LIMITATIONS:
+  - Evaluated only up to 15 concurrent agents; scalability beyond this point is untested.
+  - Experiments limited to two model sizes (1.7 B and 8 B) and to transformer architectures with standard KV caches; applicability to larger (e.g., 70 B) or encoder‑decoder models is unknown.
+  - Compression scheme is hand‑crafted (int8 for keys, TurboQuant 3‑bit for values) and may not be optimal for all hardware or precision requirements.
+  - A full prefill pass is required to build the shared KV state, adding an upfront latency that could offset runtime gains in low‑latency serving scenarios.
+  - Decompression per agent incurs per‑layer copy overhead; the paper does not report inference latency or throughput impacts.
+  - Results focus on coherent, single‑topic contexts; performance on highly heterogeneous or noisy documents is not reported.
+  - No analysis of concurrency contention or memory‑bandwidth effects when many agents read the shared pool simultaneously.
+
+❓ SUGGESTED FOLLOW-UP QUESTIONS:
+  ? Scale the shared‑pool architecture to >15 agents and to larger models (e.g., 70 B) to assess memory and quality trade‑offs at production scale.
+  ? Measure end‑to‑end inference latency and throughput, quantifying the cost of the prefill pass and per‑agent decompression.
+  ? Explore learned or adaptive quantization schemes that could further reduce bits for values while maintaining or improving quality.
+  ? Test the approach on heterogeneous or multi‑topic documents to understand how compression noise interacts with less coherent contexts.
+  ? Integrate PolyKV with complementary memory‑saving techniques (activation recomputation, off‑loading) and evaluate combined benefits.
+================================================================================
+
+
+💬 Entering QA Mode for 'PolyKV: A Shared Asymmetrically-Compressed KV Cache Pool for Multi-Agent LLM Inference'.
+Ask any follow-up question (type 'exit' or 'q' to return):
+
+User >> User >> What compression ratio or memory savings did this method achieve?
+
+Agent >> The method achieved a **stable 2.91× compression ratio** across all tested configurations.  
+
+In terms of memory savings, the reduction increased with the number of concurrent agents:
+
+* **88.5 % memory saving** with 3 agents  
+* **97.7 % memory saving** with 15 agents  
+
+For a concrete example, when 15 agents shared a 4 K‑token context on Llama‑3‑8B, the KV‑cache memory was reduced from **19.8 GB to 0.45 GB**, corresponding to the 97.7 % reduction reported.
+
+User >> exit
+Exiting QA session. Goodbye!
