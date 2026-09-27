@@ -131,3 +131,11 @@ For a concrete example, when 15 agents shared a 4 K‑token context on Llama�
 
 User >> exit
 Exiting QA session. Goodbye!
+
+Autonomous arXiv Paper Digest & QA Agent
+============================================================
+Enter an arXiv ID, URL, or Research Topic: hjhjkjokojuhvgcurandommkhgpaper
+
+⏳ Processing state graph pipeline...
+
+❌ Error encountered: No arXiv papers found for query: 'hjhjkjokojuhvgcurandommkhgpaper'
