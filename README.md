@@ -136,6 +136,7 @@ Agent >> The paper states that the model uses **8 parallel attention layers (hea
 
 User  >> Does the paper mention using FlashAttention or KV-cache optimization?
 Agent >> The paper does not provide enough evidence or mention this detail.
+
 4. Design Decisions & Tradeoffs
 1. Orchestration: State Graph over Monolithic Prompt Chains
 Decision: Implemented LangGraph with an explicit AgentState schema rather than a standard linear chain.
@@ -161,3 +162,27 @@ Known Limitations & Future Improvements
 Table & Formula Parsing: Mathematical formulas and tabular data can lose structural integrity in raw text extraction; integrating vision-language document models (e.g., Nougat or MinerU) would improve equation extraction.
 
 Multi-Paper Synthesis: The current scope ranks and focuses on the single most relevant paper for a topic query. Supporting multi-document comparative synthesis across 3–5 papers would be a natural next extension.
+
+### 🛡️ Edge Cases & System Robustness (§5 Considerations)
+
+Zero or Many arXiv Candidates: If a broad topic returns multiple candidates, rank_and_select_paper scores abstract relevancy to identify and select the top paper. If zero papers match, conditional graph edges trigger a clean recovery node prompting query refinement rather than failing.
+
+PDF Parsing Failures: Text is extracted via PyMuPDF. If extracted text length falls below minimal thresholds (e.g., image-only scanned PDFs), error flags route execution to a fallback parser node rather than throwing unhandled runtime exceptions.
+
+Grounding & Anti-Hallucination: QA answers require top-k vector context retrieval from Chroma DB. System prompts explicitly restrict LLM generation strictly to retrieved context.
+
+State Passing & Persistence: Active session state is maintained in-memory using LangGraph's explicit state schema, with embeddings stored locally in Chroma DB.
+
+---
+
+### Conclusion
+
+What Worked Well: LangGraph made node debugging and conditional routing transparent and modular. Local Chroma DB storage ensured zero network overhead and completely free execution without relying on cloud vector databases.
+
+Known Limitations: Standard PyMuPDF layout parsing can occasionally lose section header hierarchies in complex or multi-column PDFs.
+
+Future Work:
+1. Integrate OCR-based parsers (Unstructured or Marker) for multi-column and image-heavy layouts.
+2. Implement multi-document comparative synthesis across topic search results.
+3. Add persistent SQLite state check-pointing across terminal sessions.
+4. Build an interactive Streamlit web interface.
