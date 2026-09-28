@@ -137,6 +137,14 @@ Agent >> The paper states that the model uses **8 parallel attention layers (hea
 User  >> Does the paper mention using FlashAttention or KV-cache optimization?
 Agent >> The paper does not provide enough evidence or mention this detail.
 
+Autonomous arXiv Paper Digest & QA Agent
+============================================================
+Enter an arXiv ID, URL, or Research Topic: hjhjkjokojuhvgcurandommkhgpaper
+
+⏳ Processing state graph pipeline...
+
+❌ Error encountered: No arXiv papers found for query: 'hjhjkjokojuhvgcurandommkhgpaper'
+
 4. Design Decisions & Tradeoffs
 1. Orchestration: State Graph over Monolithic Prompt Chains
 Decision: Implemented LangGraph with an explicit AgentState schema rather than a standard linear chain.
